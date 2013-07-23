@@ -20,25 +20,25 @@ except ImportError:
 
 pg_fields = (ArrayField, HStoreField)
 
+if not hasattr(DatabaseCreation, '_sql_indexes_for_field'):
+    def sql_indexes_for_field(self, model, f, style):
+        qn = self.connection.ops.quote_name
+        db_table = model._meta.db_table
 
-def sql_indexes_for_field(self, model, f, style):
-    qn = self.connection.ops.quote_name
-    db_table = model._meta.db_table
+        if isinstance(f, pg_fields):
+            if f.db_index:
 
-    if isinstance(f, pg_fields):
-        if f.db_index:
+                output = [(style.SQL_KEYWORD('CREATE INDEX ') +
+                              style.SQL_TABLE(qn('%s_%s_gin' % (db_table, f.column))) +
+                              style.SQL_KEYWORD(' ON ') +
+                              style.SQL_TABLE(qn(db_table)) +
+                              style.SQL_KEYWORD(' USING ') +
+                              style.SQL_COLTYPE('GIN') + ' ( ' +
+                              style.SQL_FIELD(qn(f.column)) + ' );')]
+        else:
+            output = self._sql_indexes_for_field(model, f, style)
 
-            output = [(style.SQL_KEYWORD('CREATE INDEX ') +
-                          style.SQL_TABLE(qn('%s_%s_gin' % (db_table, f.column))) +
-                          style.SQL_KEYWORD(' ON ') +
-                          style.SQL_TABLE(qn(db_table)) +
-                          style.SQL_KEYWORD(' USING ') +
-                          style.SQL_COLTYPE('GIN') + ' ( ' +
-                          style.SQL_FIELD(qn(f.column)) + ' );')]
-    else:
-        output = self._sql_indexes_for_field(model, f, style)
+        return output
 
-    return output
-
-DatabaseCreation._sql_indexes_for_field = DatabaseCreation.sql_indexes_for_field
-DatabaseCreation.sql_indexes_for_field = sql_indexes_for_field
+    DatabaseCreation._sql_indexes_for_field = DatabaseCreation.sql_indexes_for_field
+    DatabaseCreation.sql_indexes_for_field = sql_indexes_for_field
