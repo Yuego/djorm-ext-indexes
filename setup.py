@@ -2,15 +2,13 @@
 from __future__ import unicode_literals, absolute_import
 from setuptools import setup, find_packages
 
-from djorm_indexes.version import __version__
-
 description="""
 Indexing support for Array and HStore fields
 """
 
 setup(
     name="djorm-ext-indexes",
-    version=__version__,
+    version='0.1',
     url='https://github.com/Yuego/djorm-ext-indexes',
     license='MIT',
     platforms=['OS Independent'],
